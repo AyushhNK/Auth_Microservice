@@ -30,3 +30,10 @@ Auth Microservice (Django + gRPC)
         ↓
 Other Microservices (Task, User, etc.)
   └─ Validate JWT via interceptor
+
+---
+## 🏗️ Commands
+
+ python -m grpc_tools.protoc -I proto --python_out=. --grpc_python_out=. proto/auth.proto
+
+ django-admin manage.py grpcserver

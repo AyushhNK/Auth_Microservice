@@ -1,5 +1,5 @@
-import proto.auth_pb2 as auth_pb2
-import proto.auth_pb2_grpc as auth_pb2_grpc
+import auth_pb2 as auth_pb2
+import auth_pb2_grpc as auth_pb2_grpc
 import jwt
 from .models import User
 

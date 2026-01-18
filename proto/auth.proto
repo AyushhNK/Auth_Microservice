@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+package users.grpc;
 
 service AuthService {
 rpc ValidateToken (TokenRequest) returns (UserResponse);
