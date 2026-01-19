@@ -2,7 +2,7 @@ import grpc
 from concurrent import futures
 from django.core.management.base import BaseCommand
 # Ensure this import is correct based on your previous fix
-import users.grpc.auth_pb2_grpc as auth_pb2_grpc
+import auth_pb2_grpc as auth_pb2_grpc
 from users.services import AuthService 
 
 class Command(BaseCommand):  # <--- This MUST be named Command
