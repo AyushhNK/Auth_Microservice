@@ -123,7 +123,15 @@ AUTH_USER_MODEL = "users.User"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTTokenUserAuthentication",
-    )
+    ),
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "login": "5/min",
+        "register": "3/min",
+        "token_validate": "60/min",
+    }
 }
 SIMPLE_JWT = {"SIGNING_KEY": "5ahp8kseKOVB_w"}
 

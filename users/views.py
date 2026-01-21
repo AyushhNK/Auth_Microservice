@@ -1,19 +1,24 @@
 import logging
+
 from rest_framework import generics, status
 from rest_framework.response import Response
-from django.http import JsonResponse as httpResponse
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
+from rest_framework.throttling import ScopedRateThrottle
 
 from .serializers import RegisterSerializer, LoginSerializer
 from .services import validate_token
 
 logger = logging.getLogger("auth")
 
+
 # --------- Register View ---------
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
+
+    # 🔥 Throttle: 3 requests per minute
+    throttle_scope = "register"
 
     def post(self, request, *args, **kwargs):
         logger.info("Register attempt")
@@ -34,15 +39,30 @@ class RegisterView(generics.CreateAPIView):
         )
 
 
-# --------- Login View ---------
+# --------- Login & Token Validation View ---------
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
+    def get_throttles(self):
+        """
+        POST  -> login (5/min)
+        GET   -> token validation (60/min)
+        """
+        if self.request.method == "POST":
+            self.throttle_scope = "login"
+        else:
+            self.throttle_scope = "token_validate"
+
+        return super().get_throttles()
+
+    # --------- Token Validation ---------
     def get(self, request):
         logger.debug("Token validation request")
 
         try:
-            token = request.headers.get("Authorization", "").split(" ")[1]
+            auth_header = request.headers.get("Authorization", "")
+            token = auth_header.split(" ")[1]
+
             user = validate_token(token)
 
             if not user:
@@ -52,22 +72,26 @@ class LoginView(APIView):
                     status=status.HTTP_401_UNAUTHORIZED
                 )
 
-            logger.info(f"Token validated for user_id={user.id}")
+            logger.info("Token validated", extra={"user_id": user.id})
 
-            return Response({
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "is_active": user.is_active
-            }, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "is_active": user.is_active,
+                },
+                status=status.HTTP_200_OK
+            )
 
-        except Exception as e:
+        except Exception:
             logger.exception("Token validation failed")
             return Response(
                 {"detail": "Authentication failed"},
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
+    # --------- Login ---------
     def post(self, request):
         logger.info("Login attempt")
 
@@ -81,10 +105,12 @@ class LoginView(APIView):
             extra={"user_id": user.id, "email": user.email}
         )
 
-        return Response({
-            "access": serializer.validated_data["access"],
-            "refresh": serializer.validated_data["refresh"],
-            "username": user.username,
-            "email": user.email
-        }, status=status.HTTP_200_OK)
-
+        return Response(
+            {
+                "access": serializer.validated_data["access"],
+                "refresh": serializer.validated_data["refresh"],
+                "username": user.username,
+                "email": user.email,
+            },
+            status=status.HTTP_200_OK
+        )
