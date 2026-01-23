@@ -24,17 +24,18 @@ class RegisterView(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         logger.info("Register attempt")
-        try:
-            # ✅ Step 1: Validate using Pydantic
-            schema = UserCreateSchema(**request.data)
+        # try:
+        #     # ✅ Step 1: Validate using Pydantic
+        #     schema = UserCreateSchema(**request.data.to_dict())
 
-        except ValidationError as e:
-            return Response(
-                {"errors": e.errors()},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # except ValidationError as e:
+        #     return Response(
+        #         {"errors": e.errors()},
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
+        data=request.data
     
-        serializer = self.get_serializer(data=schema.model_dump())
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
 
         user = serializer.save()
