@@ -9,7 +9,7 @@ from rest_framework.throttling import ScopedRateThrottle
 
 from .serializers import RegisterSerializer, LoginSerializer
 from .services import validate_token
-from schemas.auth import UserCreateSchema
+from users.schemas.auth import UserCreateSchema
 
 logger = logging.getLogger("auth")
 

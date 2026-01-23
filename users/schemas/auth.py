@@ -5,3 +5,7 @@ class UserCreateSchema(BaseModel):
     email: EmailStr = Field(..., description="The user's email address")
     password1: str = Field(..., min_length=8, description="The user's password")
     password2: str = Field(..., min_length=8, description="Password confirmation")
+
+class UserLoginSchema(BaseModel):
+    username: str = Field(..., description="The user's username")
+    password: str = Field(..., description="The user's password")
